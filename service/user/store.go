@@ -13,12 +13,26 @@ type Store struct {
 
 // CreateUser implements types.UserStore.
 func (s *Store) CreateUser(user *types.User) error {
-	panic("unimplemented")
+	_, err := s.db.Exec("INSERT INTO users (firstName, lastName, email, password) VALUES (?, ?, ?, ?)",
+		user.FirstName, user.LastName, user.Email, user.Password)
+	return err
 }
 
 // GetUserByID implements types.UserStore.
 func (s *Store) GetUserByID(id int) (*types.User, error) {
-	panic("unimplemented")
+	row, err := s.db.Query("SELECT user FROM users WHERE id = ?", id)
+	if err != nil {
+		return nil, err
+	}
+	defer row.Close()
+	 user, err := scanRowIntoUser(row)
+	if err != nil {
+		return nil, err
+	}
+	if user.ID == 0 {
+		return nil, fmt.Errorf("user with id %d not found", id)
+	}
+	return user, nil
 }
 
 func NewStore(db *sql.DB) *Store {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+
 	"github.com/absakran01/ecom/service/auth"
 	"github.com/absakran01/ecom/types"
 	"github.com/absakran01/ecom/utils"
@@ -25,9 +26,35 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 }
 
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
+	//debug
+	fmt.Println("Login endpoint hit")
+	var payload types.LoginUserPayLoad
+	err := utils.ParseJSON(r, &payload)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid payload: %v", err))
+		return
+	}
+
+	// Validate required fields
+	if  payload.Email == "" || payload.Password == "" {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("all fields are required"))
+		return
+	}
+	user, err := h.store.GetUserByEmail(payload.Email)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, fmt.Errorf("user with email %s not found", payload.Email))
+		return
+	}
+	if !auth.CheckPasswordHash(payload.Password, user.Password) {
+		utils.WriteError(w, http.StatusUnauthorized, fmt.Errorf("invalid credentials"))
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, map[string]string{"message": "login successful", "user_name": fmt.Sprintf("%s", user.FirstName)})
 }
 
 func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
+	//debug
+	fmt.Println("Register endpoint hit")
 	var payload types.RegisterUserPayLoad
 	err := utils.ParseJSON(r, &payload)
 	if err != nil {

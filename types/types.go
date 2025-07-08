@@ -18,6 +18,11 @@ type RegisterUserPayLoad struct {
 	Password  string `json:"password"`
 }
 
+type LoginUserPayLoad struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 type UserStore interface {
 	GetUserByEmail(email string) (*User, error)
 	GetUserByID(id int) (*User, error)
