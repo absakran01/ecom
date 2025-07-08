@@ -3,6 +3,7 @@ module github.com/absakran01/ecom
 go 1.24.4
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/gorilla/mux v1.8.1
 	golang.org/x/crypto v0.39.0

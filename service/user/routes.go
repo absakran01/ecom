@@ -9,6 +9,7 @@ import (
 	"github.com/absakran01/ecom/types"
 	"github.com/absakran01/ecom/utils"
 	"github.com/gorilla/mux"
+
 )
 
 type Handler struct {
@@ -28,6 +29,8 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 	//debug
 	fmt.Println("Login endpoint hit")
+
+
 	var payload types.LoginUserPayLoad
 	err := utils.ParseJSON(r, &payload)
 	if err != nil {
@@ -49,7 +52,15 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusUnauthorized, fmt.Errorf("invalid credentials"))
 		return
 	}
-	utils.WriteJSON(w, http.StatusOK, map[string]string{"message": "login successful", "user_name": fmt.Sprintf("%s", user.FirstName)})
+
+	// Generate JWT token
+	token, err := auth.GenJWT(user.ID)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, fmt.Errorf("error generating JWT token: %v", err))
+		return
+	}	
+
+	utils.WriteJSON(w, http.StatusOK, map[string]string{"message": "login successful", "user_name": fmt.Sprintf("%s", user.FirstName), "token": token})
 }
 
 func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
